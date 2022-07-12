@@ -31,6 +31,15 @@ try:
     if 'bool_start_processing' not in st.session_state:  # Bool to state whether video processing has started
         st.session_state.bool_start_processing = False
 
+    uploaded_files = st.file_uploader(label="Upload video",
+                                  help="Upload video",
+                                  accept_multiple_files=True,
+                                  type=['mov'])  # Upload file for CSV
+
+    tfile = tempfile.NamedTemporaryFile(delete=False)
+    tfile.write(uploaded_files.read()) 
+    vf = cv.VideoCapture(tfile.name)
+
     # Initialize variables
     video_files = video_processing.GetVideoNames(constant.videos_location)
     cached_videos = st_scripts.load_videos_cache(video_files)  # Gets the data from cache for quick processing
