@@ -174,141 +174,141 @@ def CaptureImagesOnVideo(videos_to_be_processed, od):
                 x, y, w, h = box
 
                 # check if 2 objects are in the image [id tag, fish]
-                match class_ids[index]:
-                    case 1:  # Detected that id tag is found
-                        id_coords = box
-                        _id_id += 1
+                if class_ids[index] == 1:
+                    # Detected that id tag is found
+                    id_coords = box
+                    _id_id += 1
 
-                        # Work with a copy of the smaller version of image
-                        id_image = img.copy()
-                        # Give some padding to ensure values are read properly
-                        if y - 10 < 0 or y + h + 10 > height or x - 10 < 0 or x + w + 10 > width:
-                            id_image = id_image[y:y + h, x:x + w]
-                        else:
-                            id_image = id_image[y - 10:y + h + 10, x - 10:x + w + 10]
+                    # Work with a copy of the smaller version of image
+                    id_image = img.copy()
+                    # Give some padding to ensure values are read properly
+                    if y - 10 < 0 or y + h + 10 > height or x - 10 < 0 or x + w + 10 > width:
+                        id_image = id_image[y:y + h, x:x + w]
+                    else:
+                        id_image = id_image[y - 10:y + h + 10, x - 10:x + w + 10]
+
+                    # Save for reference checking
+                    SaveImages(id_image, _frame_index, _video_name, 'id')
+
+                    # Call the id tag scripts
+                    words = text_recognition(id_image)
+
+                    # Call the id tag scripts
+                    words = text_recognition(id_image)
+
+                    if len(words) < 7:
+                        errwriter.writerow(['Warning', 'ID Tag Not Found' , 'Request User Validation', 'Please check frame ' + str(_frame_index) + '.jpg in /images/' + _video_name + '/id/'])
+
+                    # open the file to write
+                    with open('output/' + _video_name + '/ids.txt', 'a', encoding='UTF8') as f:
+                        # create the csv writer
+                        writer = csv.writer(f)
+                        # ['#', 'Fish#', 'Frame', 'Value']
+                        writer.writerow([_id_id, wells_id, _frame_index, words])
+                elif class_ids[index] == 0:
+                    fish_coords = box
+                    # center point of the fish
+                    cx = int((x + x + w) / 2)
+                    cy = int((y + y + h) / 2)
+                    fish_center_coords.append((cx, cy))
+
+                    hypothenuse = round(math.hypot(cx - posX, cy - posY))
+                    # print(hypothenuse, hypo_threshold)
+
+                    if (prev_center_pts == [] and check_empty >= 2):
+                        # check if the previous 3 frames are empty if not it is the same fish
+                        wells_id += 1
+
+                    # distance lesser than previous distance
+                    if (hypothenuse < hypo_threshold):
+                        _fish_id += 1
+                        hypo_threshold = hypothenuse
+                        _has_image = True
 
                         # Save for reference checking
-                        SaveImages(id_image, _frame_index, _video_name, 'id')
-
-                        # Call the id tag scripts
-                        words = text_recognition(id_image)
-
-                        # Call the id tag scripts
-                        words = text_recognition(id_image)
-
-                        if len(words) < 7:
-                            errwriter.writerow(['Warning', 'ID Tag Not Found' , 'Request User Validation', 'Please check frame ' + str(_frame_index) + '.jpg in /images/' + _video_name + '/id/'])
+                        SaveImages(frame, _frame_index, _video_name, 'actual')
 
                         # open the file to write
-                        with open('output/' + _video_name + '/ids.txt', 'a', encoding='UTF8') as f:
+                        with open('output/' + _video_name + '/images.txt', 'a', encoding='UTF8') as f:
                             # create the csv writer
                             writer = csv.writer(f)
-                            # ['#', 'Fish#', 'Frame', 'Value']
-                            writer.writerow([_id_id, wells_id, _frame_index, words])
-                    case 0:  # Detected the barramundi fish
-                        fish_coords = box
-                        # center point of the fish
-                        cx = int((x + x + w) / 2)
-                        cy = int((y + y + h) / 2)
-                        fish_center_coords.append((cx, cy))
+                            # ['#', 'Fish#', 'Frame', 'Hypothenuse']
+                            writer.writerow([_fish_id, wells_id, _frame_index, hypothenuse])
 
-                        hypothenuse = round(math.hypot(cx - posX, cy - posY))
-                        # print(hypothenuse, hypo_threshold)
+                    # reset checker
+                    else:
+                        hypo_threshold = 90  # Try to another fish that is closer
 
-                        if (prev_center_pts == [] and check_empty >= 2):
-                            # check if the previous 3 frames are empty if not it is the same fish
-                            wells_id += 1
+                    check_empty = 0
 
-                        # distance lesser than previous distance
-                        if (hypothenuse < hypo_threshold):
-                            _fish_id += 1
-                            hypo_threshold = hypothenuse
-                            _has_image = True
+                    if (_has_image):
+                        # get fish dimensions using image
+                        fish_length, fish_depth, cropped_img, flag = fish_measurement(frame.copy())
+                        # open the file to write
+                        # error checking for fish dimensions
+                        if len(flag) > 0:
+                            errwriter.writerow(['Warning', 'Fish Dimension Not Found' , 'Request User Validation', 'Please check frame ' + str(_frame_index) + '.jpg in /images/' + _video_name + '/actual/'])
+                        with open('output/' + _video_name + '/dimensions.txt', 'a', encoding='UTF8') as f:
+                            writer = csv.writer(f)
+                            # write the header
 
-                            # Save for reference checking
-                            SaveImages(frame, _frame_index, _video_name, 'actual')
+                            """
+                            '#' - fish_id is the # unique key for the data
+                            'Fish#' - current num of fish that's passing through the conveyor belt
+                            'Frame' - the num value of the frame of the video image taken
+                            'Length' - length of the fish (From head to tail)
+                            'Depth' - the length of the depth of the fish (Widest point of the fish)
+                            """
+                            # writer.writerow(['#', 'Fish#', 'Frame', 'Length', 'Depth'])
+                            writer.writerow([_fish_id, wells_id, _frame_index, fish_length, fish_depth, flag])
 
-                            # open the file to write
-                            with open('output/' + _video_name + '/images.txt', 'a', encoding='UTF8') as f:
-                                # create the csv writer
-                                writer = csv.writer(f)
-                                # ['#', 'Fish#', 'Frame', 'Hypothenuse']
-                                writer.writerow([_fish_id, wells_id, _frame_index, hypothenuse])
-
-                        # reset checker
-                        else:
-                            hypo_threshold = 90  # Try to another fish that is closer
-
-                        check_empty = 0
-
-                        if (_has_image):
-                            # get fish dimensions using image
-                            fish_length, fish_depth, cropped_img, flag = fish_measurement(frame.copy())
-                            # open the file to write
-                            # error checking for fish dimensions
-                            if len(flag) > 0:
-                                errwriter.writerow(['Warning', 'Fish Dimension Not Found' , 'Request User Validation', 'Please check frame ' + str(_frame_index) + '.jpg in /images/' + _video_name + '/actual/'])
-                            with open('output/' + _video_name + '/dimensions.txt', 'a', encoding='UTF8') as f:
-                                writer = csv.writer(f)
-                                # write the header
-
-                                """
-                                '#' - fish_id is the # unique key for the data
-                                'Fish#' - current num of fish that's passing through the conveyor belt
-                                'Frame' - the num value of the frame of the video image taken
-                                'Length' - length of the fish (From head to tail)
-                                'Depth' - the length of the depth of the fish (Widest point of the fish)
-                                """
-                                # writer.writerow(['#', 'Fish#', 'Frame', 'Length', 'Depth'])
-                                writer.writerow([_fish_id, wells_id, _frame_index, fish_length, fish_depth, flag])
-
-                            SaveImages(cropped_img, _frame_index, _video_name, 'fish')
+                        SaveImages(cropped_img, _frame_index, _video_name, 'fish')
                             
-                    case 2:  # scale
-                        _scale_id += 1
-                        scale_coords = box
+                elif class_ids[index] == 2:  # scale
+                    _scale_id += 1
+                    scale_coords = box
 
-                        ###
-                        # Test Contours
-                        ###
-                        scale_image = img.copy()
-                        scale_image = scale_image[y - 10:y + h + 10, x - 10:x + w + 10]
-                        scale_image = cv2.resize(scale_image, None, fx=2, fy=2)
-                        saveCopy = scale_image.copy()
+                    ###
+                    # Test Contours
+                    ###
+                    scale_image = img.copy()
+                    scale_image = scale_image[y - 10:y + h + 10, x - 10:x + w + 10]
+                    scale_image = cv2.resize(scale_image, None, fx=2, fy=2)
+                    saveCopy = scale_image.copy()
 
-                        scale_image = cv2.cvtColor(scale_image, cv2.COLOR_BGR2HSV)
-                        GRAY_MIN = np.array([90, 8, 37], np.uint8)
-                        GRAY_MAX = np.array([105, 255, 255], np.uint8)
+                    scale_image = cv2.cvtColor(scale_image, cv2.COLOR_BGR2HSV)
+                    GRAY_MIN = np.array([90, 8, 37], np.uint8)
+                    GRAY_MAX = np.array([105, 255, 255], np.uint8)
 
-                        frame_threshed = cv2.inRange(scale_image, GRAY_MIN, GRAY_MAX)
-                        output = cv2.bitwise_and(scale_image, scale_image, mask=frame_threshed)
-                        ret, thresh = cv2.threshold(frame_threshed, 40, 255, 0)  # For shadows
-                        if int(cv2.__version__[0]) > 3:
-                            contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-                        else:
-                            im2, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL,
-                                                                        cv2.CHAIN_APPROX_NONE)
+                    frame_threshed = cv2.inRange(scale_image, GRAY_MIN, GRAY_MAX)
+                    output = cv2.bitwise_and(scale_image, scale_image, mask=frame_threshed)
+                    ret, thresh = cv2.threshold(frame_threshed, 40, 255, 0)  # For shadows
+                    if int(cv2.__version__[0]) > 3:
+                        contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+                    else:
+                        im2, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL,
+                                                                    cv2.CHAIN_APPROX_NONE)
 
-                        if len(contours) != 0:
-                            # draw in blue the contours that were founded
-                            cv2.drawContours(output, contours, -1, 255, 3)
+                    if len(contours) != 0:
+                        # draw in blue the contours that were founded
+                        cv2.drawContours(output, contours, -1, 255, 3)
 
-                            # find the biggest countour (c) by the area
-                            c = max(contours, key=cv2.contourArea)
-                            x, y, w, h = cv2.boundingRect(c)
+                        # find the biggest countour (c) by the area
+                        c = max(contours, key=cv2.contourArea)
+                        x, y, w, h = cv2.boundingRect(c)
 
-                            # draw the biggest contour (c) in green
-                            cv2.rectangle(output, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                        # draw the biggest contour (c) in green
+                        cv2.rectangle(output, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-                            saveCopy = saveCopy[y:y + h, x:x + w]
-                            scale_reading = digit_recognition(saveCopy)
+                        saveCopy = saveCopy[y:y + h, x:x + w]
+                        scale_reading = digit_recognition(saveCopy)
 
-                            # open the file to write
-                            with open('output/' + _video_name + '/weights.txt', 'a', encoding='UTF8') as f:
-                                # create the csv writer
-                                writer = csv.writer(f)
-                                # ['#', 'Fish#', 'Frame', 'Weight']
-                                writer.writerow([_scale_id, wells_id, _frame_index, scale_reading])
+                        # open the file to write
+                        with open('output/' + _video_name + '/weights.txt', 'a', encoding='UTF8') as f:
+                            # create the csv writer
+                            writer = csv.writer(f)
+                            # ['#', 'Fish#', 'Frame', 'Weight']
+                            writer.writerow([_scale_id, wells_id, _frame_index, scale_reading])
 
                         # show the images
                         # cv2.imshow("Result", np.hstack([scale_image, output]))
@@ -363,8 +363,8 @@ def CaptureImagesOnVideo(videos_to_be_processed, od):
                         # cv2.imshow("Result", np.hstack([scale_image, output]))
 
                         # cv2.waitKey(0)
-                    case _:
-                        continue
+                else:
+                    continue
 
             if (_has_image == True):
                 _scale_id += 1
@@ -374,7 +374,7 @@ def CaptureImagesOnVideo(videos_to_be_processed, od):
                 # error checking for scale reading
                 if(scale_reading == 'N.A'):
                     errwriter.writerow(['Warning', 'Scale Reading Not Found' , 'Request User Validation', 'Please check frame ' + str(_frame_index) + '.jpg in /images/' + _video_name + '/scale/'])
-                    
+                        
                 # open the file to write
                 with open('output/' + _video_name + '/weights.txt', 'a', encoding='UTF8') as f:
                     # create the csv writer
