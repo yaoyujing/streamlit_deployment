@@ -27,16 +27,16 @@ def save_uploadedfile(uploadedfile):
          f.write(uploadedfile.getbuffer())
      return st.success("Saved File:{} to tempDir".format(uploadedfile.name))
 
-datafile = st.file_uploader(label="Upload video",
-                                help="Upload video",
-                                accept_multiple_files=True,
-                                type=['mp4'])  # Upload file for CSV
+# datafile = st.file_uploader(label="Upload video",
+#                                 help="Upload video",
+#                                 accept_multiple_files=True,
+#                                 type=['mp4'])  # Upload file for CSV
 
-if datafile is not None:
-    file_details = {"FileName":datafile.name,"FileType":datafile.type}
-    df  = pd.read_csv(datafile)
-    st.dataframe(df)
-    save_uploadedfile(datafile)
+# if datafile is not None:
+#     file_details = {"FileName":datafile.name,"FileType":datafile.type}
+#     df  = pd.read_csv(datafile)
+#     st.dataframe(df)
+#     save_uploadedfile(datafile)
 
 try:
 
