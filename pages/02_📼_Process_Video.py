@@ -43,7 +43,7 @@ try:
     vf = cv.VideoCapture(tfile.name)
 
     # Initialize variables
-    video_files = video_processing.GetVideoNames(constant.videos_location)
+    video_files = video_processing.GetVideoNames(vf)
     cached_videos = st_scripts.load_videos_cache(video_files)  # Gets the data from cache for quick processing
     num_of_unprocessed_videos = st.empty()
     video_title = st.empty()
