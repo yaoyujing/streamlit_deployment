@@ -8,7 +8,7 @@ import importlib
 import os
 import shutil
 import csv
-import cv2
+
 import glob
 import random
 import math
@@ -366,7 +366,7 @@ def CaptureImagesOnVideo(videos_to_be_processed, od):
                 # error checking for scale reading
                 if(scale_reading == 'N.A'):
                     errwriter.writerow(['Warning', 'Scale Reading Not Found' , 'Request User Validation', 'Please check frame ' + str(_frame_index) + '.jpg in /images/' + _video_name + '/scale/'])
-                        
+
                 # open the file to write
                 with open('output/' + _video_name + '/weights.txt', 'a', encoding='UTF8') as f:
                     # create the csv writer
