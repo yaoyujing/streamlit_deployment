@@ -36,7 +36,7 @@ try:
     uploaded_files = st.file_uploader(label="Upload video",
                                   help="Upload video",
                                   accept_multiple_files=True,
-                                  type=['mov'])  # Upload file for CSV
+                                  type=['mp4'])  # Upload file for CSV
 
     tfile = tempfile.NamedTemporaryFile(delete=False)
     tfile.write(uploaded_files.read()) 
