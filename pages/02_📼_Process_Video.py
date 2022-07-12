@@ -27,6 +27,17 @@ def save_uploadedfile(uploadedfile):
          f.write(uploadedfile.getbuffer())
      return st.success("Saved File:{} to tempDir".format(uploadedfile.name))
 
+datafile = st.file_uploader(label="Upload video",
+                                help="Upload video",
+                                accept_multiple_files=True,
+                                type=['mp4'])  # Upload file for CSV
+
+if datafile is not None:
+    file_details = {"FileName":datafile.name,"FileType":datafile.type}
+    df  = pd.read_csv(datafile)
+    st.dataframe(df)
+    save_uploadedfile(datafile)
+
 try:
 
     # Session State Initialization
@@ -37,16 +48,7 @@ try:
     if 'bool_start_processing' not in st.session_state:  # Bool to state whether video processing has started
         st.session_state.bool_start_processing = False
 
-    datafile = st.file_uploader(label="Upload video",
-                                  help="Upload video",
-                                  accept_multiple_files=True,
-                                  type=['mp4'])  # Upload file for CSV
 
-    if datafile is not None:
-        file_details = {"FileName":datafile.name,"FileType":datafile.type}
-        df  = pd.read_csv(datafile)
-        st.dataframe(df)
-        save_uploadedfile(datafile)
 
     # Initialize variables
     video_files = video_processing.GetVideoNames(constant.videos_location)

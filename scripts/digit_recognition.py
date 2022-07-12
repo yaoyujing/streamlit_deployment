@@ -165,7 +165,6 @@ def get_roi(image):
 
     #array that contain all the contours in the image
     contours, _ = cv2.findContours(edged, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    print(contours)
     # sort contours by area, and get the largest
     contours = sorted(contours, key=cv2.contourArea, reverse=True)[:1]
 
