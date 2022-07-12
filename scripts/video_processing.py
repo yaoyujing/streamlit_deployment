@@ -69,15 +69,7 @@ def GetVideoNames(path):
                 writer.writerow(['#', 'Fish#', 'Frame', 'Weight'])
 
         # Add to list of videos to be processed
-        match file_extension.lower():
-            case '.mov':
-                videos_array.append(file.lower())
-            case '.mp4':
-                videos_array.append(file.lower())
-            case _:
-                errwriter.writerow(['Warning', 'Unsupported Video Format', 'Video Not MP4 or MOV',
-                                    'Please check ' + str(file) + ' for supported formats'])
-                continue
+            videos_array.append(file.lower())
     return videos_array
 
 
