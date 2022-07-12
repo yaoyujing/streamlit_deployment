@@ -22,6 +22,10 @@ st.set_page_config(
 # Page Sidebar
 st.sidebar.success("Select a demo above.")  # Page Sidebar
 st.write('# 📼 Process Video 📼')  # Page Title
+def save_uploadedfile(uploadedfile):
+     with open(os.path.join("../videos",uploadedfile.name),"wb") as f:
+         f.write(uploadedfile.getbuffer())
+     return st.success("Saved File:{} to tempDir".format(uploadedfile.name))
 
 try:
 
@@ -33,17 +37,19 @@ try:
     if 'bool_start_processing' not in st.session_state:  # Bool to state whether video processing has started
         st.session_state.bool_start_processing = False
 
-    uploaded_files = st.file_uploader(label="Upload video",
+    datafile = st.file_uploader(label="Upload video",
                                   help="Upload video",
                                   accept_multiple_files=True,
                                   type=['mp4'])  # Upload file for CSV
 
-    tfile = tempfile.NamedTemporaryFile(delete=False)
-    tfile.write(uploaded_files.read()) 
-    vf = cv.VideoCapture(tfile.name)
+    if datafile is not None:
+        file_details = {"FileName":datafile.name,"FileType":datafile.type}
+        df  = pd.read_csv(datafile)
+        st.dataframe(df)
+        save_uploadedfile(datafile)
 
     # Initialize variables
-    video_files = video_processing.GetVideoNames(vf)
+    video_files = video_processing.GetVideoNames(constant.videos_location)
     cached_videos = st_scripts.load_videos_cache(video_files)  # Gets the data from cache for quick processing
     num_of_unprocessed_videos = st.empty()
     video_title = st.empty()
