@@ -20,6 +20,8 @@ path==16.4.0
 path.py==12.5.0
 Pillow==9.2.0
 pluggy==1.0.0
+plotly==5.9.0
+plotly-express==0.4.1
 py==1.11.0
 pyparsing==3.0.9
 PyQt6==6.3.1
