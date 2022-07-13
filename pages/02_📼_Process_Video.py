@@ -22,42 +22,21 @@ st.set_page_config(
 # Page Sidebar
 st.sidebar.success("Select a demo above.")  # Page Sidebar
 st.write('# 📼 Process Video 📼')  # Page Title
-def save_uploadedfile(uploadedfile):
-     with open(os.path.join("../videos",uploadedfile.name),"wb") as f:
-         f.write(uploadedfile.getbuffer())
-     return st.success("Saved File:{} to tempDir".format(uploadedfile.name))
 
-# datafile = st.file_uploader(label="Upload video",
-#                                 help="Upload video",
-#                                 accept_multiple_files=True,
-#                                 type=['mp4'])  # Upload file for CSV
+datafile = st.file_uploader(label="Upload video",
+                                help="Upload video",
+                                accept_multiple_files=True,
+                                type=['mp4'])  # Upload file for CSV
 
-# if datafile is not None:
-#     file_details = {"FileName":datafile.name,"FileType":datafile.type}
-#     df  = pd.read_csv(datafile)
-#     st.dataframe(df)
-#     save_uploadedfile(datafile)
 
 try:
 
     # Session State Initialization
     # st.write('###')  # Line break
     # st.write('🐛 For Debugging 🐛', st.session_state)  # Displays session states
-    if 'bool_have_videos' not in st.session_state:  # Bool to state whether there are videos in folder
-        st.session_state.bool_have_videos = False
-    if 'bool_start_processing' not in st.session_state:  # Bool to state whether video processing has started
-        st.session_state.bool_start_processing = False
-
-
-
     # Initialize variables
-    video_files = video_processing.GetVideoNames(constant.videos_location)
-    cached_videos = st_scripts.load_videos_cache(video_files)  # Gets the data from cache for quick processing
-    num_of_unprocessed_videos = st.empty()
-    video_title = st.empty()
-    video_player = st.empty()
-    video_processing_warning = st.empty()
-    video_processing_window = st.empty()
+    cached_videos = st_scripts.load_videos_cache(datafile)  # Gets the data from cache for quick processing
+
 
     ballooned = False
     processing_complete = False
